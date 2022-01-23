@@ -62,7 +62,7 @@ exports.saveCompany = async (req, res) => {
             const updateConfig = await newConfig.save();
         } else {
             getData['company_letter'] = req.body.letter,
-            getData['page'] = req.body.page_no
+                getData['page'] = req.body.page_no
             const updateConfig = await getData.save();
         }
         res.status(201).json(true);
@@ -73,38 +73,41 @@ exports.saveCompany = async (req, res) => {
 
 // 3rd api for saving company attributes 
 exports.companyDetails = async (req, res) => {
-    try {   
+    try {
         //we are using url of company to get the company id from company collections
-        
-        const getCompany = await company.findOne({ url: req.body.url });
-        let id = getCompany._id;
-        getCompany.status = "scraped";
-        const updatedCompanyStatus = await getCompany.save();
-        /***
-         * company other attributes added
-         */
-        const addDetails = await new companyAttributes({
-            description: req.body.description,
-            website: req.body.website,
-            domain: req.body.domain,
-            employeeSize: req.body.employeeSize,
-            followers: req.body.followers,
-            company_id: id,
-            headquarter: req.body.headquarter,
-        });
-        const detailsAdded = await addDetails.save();
-
-        /** people should be object so that we can get url as well as name */
-        const requestPeople = req.body.people;
-        for (let i = 0; i < requestPeople.length; i++) {
-            const addPeople = await new People({
-                url: requestPeople[i]['url'],
-                name: requestPeople[i]['name'],
+        // console.log(req.body[0].people);
+        details = req.body;
+        for (let i = 0; i < details.length; i++) {
+            const getCompany = await company.findOne({ url: details[i].url });
+            let id = getCompany._id;
+            getCompany.status = "scraped";
+            const updatedCompanyStatus = await getCompany.save();
+            /***
+             * company other attributes added
+             */
+            const addDetails = await new companyAttributes({
+                description: req.body.description,
+                website: req.body.website,
+                domain: req.body.domain,
+                employeeSize: req.body.employeeSize,
+                followers: req.body.followers,
                 company_id: id,
-            })
-            const peopleAdded = await addPeople.save();
+                headquarter: req.body.headquarter,
+            });
+            const detailsAdded = await addDetails.save();
+
+            /** people should be object so that we can get url as well as name */
+            const requestPeople = details[i].people;
+            for (let i = 0; i < requestPeople.length; i++) {
+                const addPeople = await new People({
+                    url: requestPeople[i]['url'],
+                    name: requestPeople[i]['name'],
+                    company_id: id,
+                })
+                const peopleAdded = await addPeople.save();
+            }
+            res.status(201).json(`Details added successfully, ${true}`)
         }
-        res.status(201).json(`Details added successfully, ${true}`)
     } catch (error) {
         res.status(500).json(`some error Occured ${error}`);
     }
@@ -178,7 +181,7 @@ exports.savePeople = async (req, res) => {
 exports.peopleDetails = async (req, res) => {
     try {
         // peoples id is already sended to client they have sent that id too
-        const getPeople = await People.find({_id:req.body.people_id})
+        const getPeople = await People.find({ _id: req.body.people_id })
         getPeople[0]['status'] = "scraped";
         await getPeople[0].save();
         // /***
