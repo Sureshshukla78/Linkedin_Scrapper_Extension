@@ -79,34 +79,36 @@ exports.companyDetails = async (req, res) => {
         details = req.body;
         console.log(details);
         for (let i = 0; i < details.length; i++) {
-            const getCompany = await company.findOne({ url: details[i].url });
-            let id = getCompany._id;
-            getCompany.status = "scraped";
-            const updatedCompanyStatus = await getCompany.save();
-            /***
-             * company other attributes added
-             */
-            const addDetails = await new companyAttributes({
-                description: details[i].description,
-                website: details[i].website,
-                domain: details[i].domain,
-                employeeSize: details[i].employeeSize,
-                followers: details[i].followers,
-                company_id: id,
-                headquarter: details[i].headquarter,
-            });
-            const detailsAdded = await addDetails.save();
+            if (details[i].url != null) {
+                const getCompany = await company.findOne({ url: details[i].url });
+                let id = getCompany._id;
+                getCompany.status = "scraped";
+                const updatedCompanyStatus = await getCompany.save();
+                /***
+                 * company other attributes added
+                 */
+                const addDetails = await new companyAttributes({
+                    description: details[i].description,
+                    website: details[i].website,
+                    domain: details[i].domain,
+                    employeeSize: details[i].employeeSize,
+                    followers: details[i].followers,
+                    company_id: id,
+                    headquarter: details[i].headquarter,
+                });
+                const detailsAdded = await addDetails.save();
 
-            /** people should be object so that we can get url as well as name */
-            // const requestPeople = details[i].people;
-            // for (let i = 0; i < requestPeople.length; i++) {
-            //     const addPeople = await new People({
-            //         url: requestPeople[i]['url'],
-            //         name: requestPeople[i]['name'],
-            //         company_id: id,
-            //     })
-            //     const peopleAdded = await addPeople.save();
-            // }
+                /** people should be object so that we can get url as well as name */
+                // const requestPeople = details[i].people;
+                // for (let i = 0; i < requestPeople.length; i++) {
+                //     const addPeople = await new People({
+                //         url: requestPeople[i]['url'],
+                //         name: requestPeople[i]['name'],
+                //         company_id: id,
+                //     })
+                //     const peopleAdded = await addPeople.save();
+                // }
+            }
         }
         res.status(201).json(`Details added successfully, ${true}`)
     } catch (error) {
