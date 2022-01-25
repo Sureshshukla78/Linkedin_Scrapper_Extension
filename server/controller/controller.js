@@ -106,8 +106,8 @@ exports.companyDetails = async (req, res) => {
                 })
                 const peopleAdded = await addPeople.save();
             }
-            res.status(201).json(`Details added successfully, ${true}`)
         }
+        res.status(201).json(`Details added successfully, ${true}`)
     } catch (error) {
         res.status(500).json(`some error Occured ${error}`);
     }
