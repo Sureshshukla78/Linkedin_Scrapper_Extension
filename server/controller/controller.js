@@ -86,13 +86,13 @@ exports.companyDetails = async (req, res) => {
              * company other attributes added
              */
             const addDetails = await new companyAttributes({
-                description: req.body.description,
-                website: req.body.website,
-                domain: req.body.domain,
-                employeeSize: req.body.employeeSize,
-                followers: req.body.followers,
+                description: details[i].description,
+                website: details[i].website,
+                domain: details[i].domain,
+                employeeSize: details[i].employeeSize,
+                followers: details[i].followers,
                 company_id: id,
-                headquarter: req.body.headquarter,
+                headquarter: details[i].headquarter,
             });
             const detailsAdded = await addDetails.save();
 
