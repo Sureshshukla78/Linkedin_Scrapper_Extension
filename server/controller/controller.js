@@ -79,7 +79,7 @@ exports.companyDetails = async (req, res) => {
         details = req.body;
         console.log(details);
         for (let i = 0; i < details.length; i++) {
-            if (details[i] = undefined) {
+            if (details[i] != undefined) {
                 const getCompany = await company.findOne({ url: details[i].url });
                 let id = getCompany._id;
                 getCompany.status = "scraped";
