@@ -77,6 +77,7 @@ exports.companyDetails = async (req, res) => {
         //we are using url of company to get the company id from company collections
         // console.log(req.body[0].people);
         details = req.body;
+        console.log(details);
         for (let i = 0; i < details.length; i++) {
             const getCompany = await company.findOne({ url: details[i].url });
             let id = getCompany._id;
@@ -97,15 +98,15 @@ exports.companyDetails = async (req, res) => {
             const detailsAdded = await addDetails.save();
 
             /** people should be object so that we can get url as well as name */
-            const requestPeople = details[i].people;
-            for (let i = 0; i < requestPeople.length; i++) {
-                const addPeople = await new People({
-                    url: requestPeople[i]['url'],
-                    name: requestPeople[i]['name'],
-                    company_id: id,
-                })
-                const peopleAdded = await addPeople.save();
-            }
+            // const requestPeople = details[i].people;
+            // for (let i = 0; i < requestPeople.length; i++) {
+            //     const addPeople = await new People({
+            //         url: requestPeople[i]['url'],
+            //         name: requestPeople[i]['name'],
+            //         company_id: id,
+            //     })
+            //     const peopleAdded = await addPeople.save();
+            // }
         }
         res.status(201).json(`Details added successfully, ${true}`)
     } catch (error) {
