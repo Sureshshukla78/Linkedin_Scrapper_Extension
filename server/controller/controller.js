@@ -45,7 +45,7 @@ exports.saveCompany = async (req, res) => {
     try {
         // guessing we are getting array of Object of companies url and name
         const companies = req.body.companies;
-        console.log(companies);
+        console.log(req.body);
         for (let i = 0; i < companies.length; i++) {
             try {
                 // validating url
@@ -71,7 +71,7 @@ exports.saveCompany = async (req, res) => {
             const updateConfig = await newConfig.save();
         } else {
             getData['company_letter'] = req.body.letter,
-                getData['page'] = req.body.page
+            getData['page'] = req.body.page
             const updateConfig = await getData.save();
         }
         res.status(201).json(true);
@@ -104,7 +104,6 @@ exports.companyDetails = async (req, res) => {
                     headquarter: details[i].headquarter,
                 });
                 const detailsAdded = await addDetails.save();
-
                 /** people should be object so that we can get url as well as name */
                 // const requestPeople = details[i].people;
                 // for (let i = 0; i < requestPeople.length; i++) {
@@ -118,13 +117,13 @@ exports.companyDetails = async (req, res) => {
             }
         }
         //----------------->processing converting backing to not_scraped------------------------------->
-        try {
-            const getCompany = await company.findOne({ status: "processing" });
-            getCompany.status = "not_scraped";
-            const revertedStatus = await getCompany.save();
-        } catch (err) {
-            console.log("error in reverting company status to not scraped from processing....")
-        }
+        // try {
+        //     const getCompany = await company.findOne({ status: "processing" });
+        //     getCompany.status = "not_scraped";
+        //     const revertedStatus = await getCompany.save();
+        // } catch (err) {
+        //     console.log("error in reverting company status to not scraped from processing....")
+        // }
         res.status(201).json(`Details added successfully, ${true}`)
     } catch (error) {
         res.status(500).json(`some error Occured ${error}`);
