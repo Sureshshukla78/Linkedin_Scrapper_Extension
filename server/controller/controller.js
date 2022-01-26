@@ -63,20 +63,23 @@ exports.saveCompany = async (req, res) => {
 
         // updating single row of config collection
         const getData = await config.find({});
+        console.log(getData);
         if (getData.length === 0) {
+            console.log("creating config now........................")
             const newConfig = await new config({
                 company_letter: req.body.letter,
                 page: req.body.page,
             });
             const updateConfig = await newConfig.save();
         } else {
-            getData['company_letter'] = req.body.letter,
-            getData['page'] = req.body.page
-            const updateConfig = await getData.save();
+            console.log("hiii there updating config now........................")
+            getData[0].company_letter = req.body.letter,
+            getData[0].page = req.body.page
+            const updateConfig = await getData[0].save();
         }
         res.status(201).json(true);
     } catch (error) {
-        res.status(500).json(error);
+        res.status(500).json(`${error}`);
     }
 }
 
