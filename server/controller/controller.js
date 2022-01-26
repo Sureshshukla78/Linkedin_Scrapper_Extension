@@ -65,12 +65,12 @@ exports.saveCompany = async (req, res) => {
                         name: companies[i]['name']
                     });
                     const saveCompany = await addCompany.save();
+                    await delay(100);
                 }
             } catch (error) {
                 res.status(500).json(`Error occured during saving company ${error}`);
             }
         }
-
         // updating single row of config collection
         const getData = await config.find({});
         if (getData.length === 0) {
@@ -84,9 +84,6 @@ exports.saveCompany = async (req, res) => {
             getData[0].page = req.body.page
             const updateConfig = await getData[0].save();
         }
-        
-        await delay(1000*60);
-        console.log("wait is done sending response back...................")
         res.status(201).json(true);
     } catch (error) {
         res.status(500).json(`${error}`);
