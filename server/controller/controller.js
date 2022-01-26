@@ -84,7 +84,9 @@ exports.saveCompany = async (req, res) => {
             getData[0].page = req.body.page
             const updateConfig = await getData[0].save();
         }
-        await delay(1000*40);
+        
+        await delay(1000*60);
+        console.log("wait is done sending response back...................")
         res.status(201).json(true);
     } catch (error) {
         res.status(500).json(`${error}`);
