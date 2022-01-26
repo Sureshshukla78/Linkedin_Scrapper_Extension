@@ -17,6 +17,16 @@ function isValidURL(string) {
 //     return (res !== null)
 // };
 
+// delay for 1 minute
+function delay(n) {
+    n = n || 2000;
+    return new Promise(done => {
+        setTimeout(() => {
+            done();
+        }, n);
+    });
+}
+
 // retrieve data from config table, company table and send json
 exports.configCompany = async (req, res) => {
     try {
@@ -63,20 +73,18 @@ exports.saveCompany = async (req, res) => {
 
         // updating single row of config collection
         const getData = await config.find({});
-        console.log(getData);
         if (getData.length === 0) {
-            console.log("creating config now........................")
             const newConfig = await new config({
                 company_letter: req.body.letter,
                 page: req.body.page,
             });
             const updateConfig = await newConfig.save();
         } else {
-            console.log("hiii there updating config now........................")
             getData[0].company_letter = req.body.letter,
             getData[0].page = req.body.page
             const updateConfig = await getData[0].save();
         }
+        await delay(1000*40);
         res.status(201).json(true);
     } catch (error) {
         res.status(500).json(`${error}`);
@@ -144,7 +152,7 @@ exports.configPeople = async (req, res) => {
             const getPeople = await People.find({ status: "not_scraped" }).limit(10);
             if (getPeople.length === 0) {
                 // if we don't find any people whose status is not scraped then we send 5 company details  
-                // whose people_status is 0 
+                // whose people_status is 0.
                 const getCompany = await company.find({ people_status: 0 }).limit(5);
                 res.status(200).json(getCompany);
                 // changing people_status to 1 means visited once in company table
