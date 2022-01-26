@@ -70,8 +70,8 @@ exports.saveCompany = async (req, res) => {
                 res.status(500).json(`Error occured during saving company ${error}`);
             }
         }
-        await delay(1000*60);
-        console.log("wait is done sending response back...................")
+        // await delay(1000*60);
+        // console.log("wait is done sending response back...................")
         // updating single row of config collection
         const getData = await config.find({});
         if (getData.length === 0) {
