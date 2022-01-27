@@ -3,9 +3,9 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 8000;
+const config = 
 
-console.log(`${__dirname + "./config"}`)
-
+//  /config/config.json
 
 // connecting DB
 const sequelize = require("./server/database/connection");
