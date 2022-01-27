@@ -1,7 +1,6 @@
-const express = require('express');
+const express = require("express");
 const route = express.Router();
 const controller = require("../controller/controller");
-
 
 route.get("/", (req,res)=>{
     res.send("hello from the other side");

@@ -1,27 +1,30 @@
-const mongoose = require("mongoose");
-
-const peopleDetailsSchema = new mongoose.Schema({
+const sequelize = require("../database/connection");
+const Sequelize = require("sequelize");
+module.exports = sequelize.define("people_details", {
+    id:{
+        allowNull:false,
+        autoIncrement:true,
+        primaryKey:true,
+        type: Sequelize.INTEGER(11),
+    },
     email : {
-        type: String,
+        type: Sequelize.STRING(300),
+    },
+    position : {
+        type: Sequelize.STRING(50),
+    },
+    website_link : {
+        type: Sequelize.STRING(50),
     },
     number : {
-        type: Number,
-    },
-    position :{
-        type: String,
-    },
-    website_link :{
-        type:String,
+        type: Sequelize.INTEGER(10),
     },
     experience : {
-        type: Number,
+        type: Sequelize.INTEGER(10),
     },
     people_id :{
-        type: String,
-        required: true
-    },
+        type: Sequelize.INTEGER(11),
+    }
+},{
+    timestamps:false
 });
-
-const peopleDet = new mongoose.model("peopleDetails", peopleDetailsSchema);
-
-module.exports = peopleDet;

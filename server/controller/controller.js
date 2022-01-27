@@ -1,40 +1,31 @@
 const config = require("../models/config");
 const company = require("../models/company");
-const companyAttributes = require("../models/company_details");
+const companyDetails = require("../models/company_details");
 const People = require("../models/people");
-const peopleAttributes = require("../models/people_details");
+const peopleDetails = require("../models/people_details");
 
 // defining function for validating url in different api routes
 function isValidURL(string) {
     var res = string.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
     return (res !== null)
 };
-// defining function for validating email in different api routes
 
-// TODO -> if not valid then ?
-// function isValidEmail(string) {
-//     var res = string.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/);
-//     return (res !== null)
-// };
+// setting foriegn key 
+company.hasMany(companyDetails, {as: "company_details", foreignKey:"company_id"});
+companyDetails.belongsTo(company, {as: "companies", foreignKey: "company_id"});
 
-// delay for 1 minute
-function delay(n) {
-    n = n || 2000;
-    return new Promise(done => {
-        setTimeout(() => {
-            done();
-        }, n);
-    });
-}
-
+// 
 // retrieve data from config table, company table and send json
 exports.configCompany = async (req, res) => {
     try {
-        const getData = await config.find({});
+        const getData = await config.findAll({ raw: true });
+        console.log(getData);
         if (getData.length === 0) {
             res.status(200).json(null);
         } else {
-            const getCompany = await company.find({ status: 'not_scraped' }).limit(10);
+            console.log("inside else condition getting company");
+            const getCompany = await company.findAll({ limit: 10, where: { status: 'not_scraped' } });
+            // console.log(getCompany);
             if (getCompany.length === 0) {
                 res.status(200).json(getData);
             } else {
@@ -50,12 +41,12 @@ exports.configCompany = async (req, res) => {
     }
 }
 
-// 2nd api for saving company name and url and update config as well
+// 2nd api
 exports.saveCompany = async (req, res) => {
     try {
+        console.log(req.body);
         // guessing we are getting array of Object of companies url and name
         const companies = req.body.companies;
-        console.log(req.body);
         for (let i = 0; i < companies.length; i++) {
             try {
                 // validating url
@@ -67,93 +58,101 @@ exports.saveCompany = async (req, res) => {
                     const saveCompany = await addCompany.save();
                 }
             } catch (error) {
-                res.status(500).json(`Error occured during saving company ${error}`);
+                res.status(500).json(`Error shlud be unique for every company:  ${error}`);
             }
         }
-        // await delay(1000*60);
-        // console.log("wait is done sending response back...................")
+        console.log("companies added successfully")
+
         // updating single row of config collection
-        const getData = await config.find({});
+        const getData = await config.findAll();
         if (getData.length === 0) {
             const newConfig = await new config({
                 company_letter: req.body.letter,
-                page: req.body.page,
+                page_no: req.body.page,
             });
             const updateConfig = await newConfig.save();
         } else {
-            getData[0].company_letter = req.body.letter,
-            getData[0].page = req.body.page
+            getData[0]['company_letter'] = req.body.letter,
+                getData[0]['page_no'] = req.body.page
             const updateConfig = await getData[0].save();
+            // console.log(updateConfig);
         }
         res.status(201).json(true);
     } catch (error) {
-        res.status(500).json(`${error}`);
+        res.status(500).json(error);
     }
 }
 
-// 3rd api for saving company attributes 
+// 3rd api
 exports.companyDetails = async (req, res) => {
     try {
+        //we are using url of company to get the company id from company collections
         details = req.body;
         console.log(details);
         for (let i = 0; i < details.length; i++) {
             if (details[i] != undefined) {
-/**-------------we are using url of company to get the company id from company collections--------------------------------*/ 
-                const getCompany = await company.findOne({ url: details[i].url });
-                let id = getCompany._id;
-                getCompany.status = "scraped";
-                const updatedCompanyStatus = await getCompany.save();
+                try {
+                    const getCompany = await company.findOne({ where: { url: details[i].url } });
+                    let id = getCompany.id;
+                    getCompany.status = "scraped";
+                    const updatedCompanyStatus = await getCompany.save();
 
-/**-------------------------------Company other attributes added----------------------------------------*/ 
-                const addDetails = await new companyAttributes({
-                    description: details[i].description,
-                    website: details[i].website,
-                    domain: details[i].domain,
-                    employeeSize: details[i].employeeSize,
-                    followers: details[i].followers,
-                    company_id: id,
-                    headquarter: details[i].headquarter,
-                });
-                const detailsAdded = await addDetails.save();
-                /** people should be object so that we can get url as well as name */
-                // const requestPeople = details[i].people;
-                // for (let i = 0; i < requestPeople.length; i++) {
-                //     const addPeople = await new People({
-                //         url: requestPeople[i]['url'],
-                //         name: requestPeople[i]['name'],
-                //         company_id: id,
-                //     })
-                //     const peopleAdded = await addPeople.save();
-                // }   
+                    /***  company other attributes added*/
+                    const addDetails = await new companyDetails({
+                        description: details[i].description,
+                        website: details[i].website,
+                        domain: details[i].domain,
+                        employeeSize: details[i].employeeSize,
+                        followers: details[i].followers,
+                        company_id: id,
+                        headquarter: details[i].headquarter,
+                    });
+                    const detailsAdded = await addDetails.save();
+
+                    /** people should be array of object so that we can get url as well as name */
+                    const requestPeople = details[i].people;
+                    // have to test this
+                    if (requestPeople.length != 0) {
+                        for (let i = 0; i < requestPeople.length; i++) {
+                            try {
+                                const addPeople = await new People({
+                                    url: requestPeople[i]['url'],
+                                    name: requestPeople[i]['name'],
+                                    company_id: id,
+                                })
+                                const peopleAdded = await addPeople.save();
+                            } catch (error) {
+                                res.status(500).json(`some error Occured during saving peoples ${error}`);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    res.status(500).json(`some error Occured during saving company details ${error}`);
+                }
+
             }
         }
-        //----------------->processing converting backing to not_scraped------------------------------->
-        // try {
-        //     const getCompany = await company.findOne({ status: "processing" });
-        //     getCompany.status = "not_scraped";
-        //     const revertedStatus = await getCompany.save();
-        // } catch (err) {
-        //     console.log("error in reverting company status to not scraped from processing....")
-        // }
         res.status(201).json(`Details added successfully, ${true}`)
     } catch (error) {
-        res.status(500).json(`some error Occured ${error}`);
+        res.status(500).json(`some error Occured in getting request ${error}`);
     }
 }
 
-// configPeople controller------------------------------------------------------------------------------
+// peoples apis ->
+// 1. config api
 exports.configPeople = async (req, res) => {
     try {
-        const getData = await config.find({});
+        const getData = await config.findAll({ raw: true });
         if (getData.length === 0) {
             res.status(200).json(null);
         } else {
             // checking people table for any people whose details is not scraped
-            const getPeople = await People.find({ status: "not_scraped" }).limit(10);
+            const getPeople = await People.findAll({ limit: 10, where: { status: "not_scraped" } });
             if (getPeople.length === 0) {
-                // if we don't find any people whose status is not scraped then we send 5 company details  
-                // whose people_status is 0.
-                const getCompany = await company.find({ people_status: 0 }).limit(5);
+                // if we don't find any people whose status is not scraped then we send 5 company details whose 
+                // people_status is 0 
+                const getCompany = await company.findAll({ limit: 5, where: { people_status: 0 } });
+                // TODO got bug -> if no people left as well as no company left then what we will send    
                 res.status(200).json(getCompany);
                 // changing people_status to 1 means visited once in company table
                 for (let i = 0; i < getCompany.length; i++) {
@@ -173,15 +172,17 @@ exports.configPeople = async (req, res) => {
     }
 }
 
-// savePeople controller----------------------------------------------------------------------------
+// 2. saving people api 
 exports.savePeople = async (req, res) => {
+    // if server send company array of Object for configPeople then client should call savePeople api for 
+    //  send company id, people-> URL, name
     try {
-        /**we are getting array of Object of people url and name also comapny_id which we sended 
-         * through configPeople api*/
+        // guessing we are getting array of Object of people url and name also comapny_id which we sended
+        // through configPeople api
         const peoples = req.body.peoples;
         for (let i = 0; i < peoples.length; i++) {
             try {
-                /** validating url and saving people---------------------------------->*/
+                // validating url
                 if (isValidURL(peoples[i]['url'])) {
                     const addPeople = await new People({
                         url: peoples[i]['url'],
@@ -200,37 +201,34 @@ exports.savePeople = async (req, res) => {
     }
 }
 
-/**peopleDetails controller---------------------------------------------------------------------------*/
+// 3rd api for saving people attributes 
 exports.peopleDetails = async (req, res) => {
-    details = req.body;
-    console.log(details);
     try {
-        for (let i = 0; i < details.length; i++) {
-            if (details[i] != undefined) {
-                /**converting status to scraped of people----------------------------------------------*/
-                const getPeople = await People.find({ _id: details[i].people_id })
-                getPeople[0]['status'] = "scraped";
-                await getPeople[0].save();
-
-                /**---------------People other attributes added----------------------------------------*/ 
-                const addDetails = await new peopleAttributes({
-                    email: details[i].email,
-                    number: details[i].number,
-                    position: details[i].position,
-                    website_link: details[i].website,
-                    experience: details[i].experi,
-                    people_id: details[i].people_id,
-                });
-                const detailsAdded = await addDetails.save();
+        // peoples id is already sended to client they have to sent that id too
+        detailsPeople = req.body;
+        // console.log(detailsPeople);
+        for (let i = 0; i < detailsPeople.length; i++) {
+            if (detailsPeople[i] != undefined) {
+                try {
+                    const getPeople = await People.findAll({ where: { id: detailsPeople[i].people_id } })
+                    getPeople[0]['status'] = "scraped";
+                    await getPeople[0].save();
+                    /***
+                     * People other attributes added
+                     */
+                    const addDetails = await new peopleDetails({
+                        email: detailsPeople[i].email,
+                        number: detailsPeople[i].number,
+                        position: detailsPeople[i].position,
+                        website_link: detailsPeople[i].website,
+                        experience: detailsPeople[i].experi,
+                        people_id: detailsPeople[i].people_id,
+                    });
+                    const detailsAdded = await addDetails.save();
+                } catch (error) {
+                    res.status(500).json(`Error occured in saving people details: ${error}`)
+                }
             }
-        }
-        /**processing converting backing to not_scraped------------------------------------------------*/
-        try {
-            const getPeople = await People.findOne({ status: "processing" });
-            getPeople.status = "not_scraped";
-            const revertedStatus = await getPeople.save();
-        } catch (err) {
-            console.log("error in reverting people status to not scraped from processing....")
         }
         res.status(201).json(true);
     } catch (error) {

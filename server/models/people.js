@@ -1,24 +1,26 @@
-const mongoose = require("mongoose");
-
-const peopleSchema = new mongoose.Schema({
-    url :{
-        type: String,
-        unique: true,
+const sequelize = require("../database/connection");
+const Sequelize = require("sequelize");
+module.exports = sequelize.define("people", {
+    id:{
+        allowNull:false,
+        autoIncrement:true,
+        primaryKey:true,
+        type: Sequelize.INTEGER(11),
     },
-    name:{
-        type: String
+    url : {
+        type: Sequelize.STRING,
+        unique: true
     },
-    company_id : {
-        type: String,
-        required: true
+    name : {
+        type: Sequelize.STRING,
     },
-    status : {
-        type: String,
-        enum:["not_scraped", "scraped", "processing",],
-        default: "not_scraped",
+    status:{
+        type: Sequelize.ENUM("not_scraped", "scraped", "processing"),
+        defaultValue: "not_scraped"
+    },
+    company_id: {
+        type: Sequelize.INTEGER(11)
     }
+},{
+    timestamps:false
 });
-
-const people = new mongoose.model("people", peopleSchema);
-
-module.exports = people;

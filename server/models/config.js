@@ -1,16 +1,19 @@
-const mongoose = require("mongoose");
-
-const configSchema = new mongoose.Schema({
-    company_letter :{
-        type: String,
+const sequelize = require("../database/connection");
+const Sequelize = require("sequelize");
+module.exports = sequelize.define("config", {
+    id:{
+        allowNull:false,
+        autoIncrement:true,
+        primaryKey:true,
+        type: Sequelize.INTEGER(11),
     },
-    page:{
-        type: Number,
+    company_letter: {
+        type: Sequelize.CHAR,
+        required:true,
+    },
+    page_no:{
+        type: Sequelize.INTEGER,
     }
+},{
+    timestamps:false
 });
-
-const config = new mongoose.model("config_table", configSchema);
-
-
-
-module.exports = config;

@@ -1,30 +1,33 @@
-const mongoose = require("mongoose");
-
-const companyDetailsSchema = new mongoose.Schema({
+const sequelize = require("../database/connection");
+const Sequelize = require("sequelize");
+module.exports = sequelize.define("company_details", {
+    id:{
+        allowNull:false,
+        autoIncrement:true,
+        primaryKey:true,
+        type: Sequelize.INTEGER(11),
+    },
     description : {
-        type: String,
+        type: Sequelize.STRING(2000),
+    },
+    domain : {
+        type: Sequelize.STRING(100),
     },
     website : {
-        type: String,
+        type: Sequelize.STRING(50),
     },
-    domain :{
-        type: String,
-    },
-    employeeSize:{
-        type:Number,
+    employeeSize : {
+        type: Sequelize.INTEGER(10),
     },
     followers : {
-        type: Number,
+        type: Sequelize.INTEGER(10),
+    },
+    headquarter : {
+        type: Sequelize.STRING(50),
     },
     company_id :{
-        type: String,
-        required: true
-    },
-    headquarter:{
-        type:String,
-    },
+        type: Sequelize.INTEGER(11),
+    }
+},{
+    timestamps:false
 });
-
-const companyDet = new mongoose.model("companyDetails", companyDetailsSchema);
-
-module.exports = companyDet;

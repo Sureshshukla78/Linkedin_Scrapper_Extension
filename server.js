@@ -1,9 +1,18 @@
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 8080;
-require('dotenv').config();
-// connecting mongoDB
-require("./server/database/conn");
+const port = process.env.PORT || 8000;
+
+console.log(`${__dirname + "./config"}`)
+
+
+// connecting DB
+const sequelize = require("./server/database/connection");
+
+sequelize.sync().then(()=>{
+    console.log("DB is Ready");
+});
 
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
